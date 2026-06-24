@@ -1,0 +1,301 @@
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robot Vérificateur — Mobile Money BF</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:15px}
+.container{max-width:680px;margin:0 auto;padding:1.5rem 1rem}
+.header{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem}
+.logo{width:44px;height:44px;border-radius:50%;background:#FF6600;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:14px;flex-shrink:0}
+.header h1{font-size:17px;font-weight:600}
+.header p{font-size:12px;color:#888;margin-top:2px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.25rem}
+.stat{background:#fff;border-radius:10px;padding:.75rem;text-align:center;border:1px solid #eee}
+.stat-n{font-size:22px;font-weight:600}
+.stat-l{font-size:11px;color:#888;margin-top:2px}
+.card{background:#fff;border-radius:14px;border:1px solid #eee;padding:1.25rem;margin-bottom:1rem}
+.card-title{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.875rem;display:flex;align-items:center;gap:6px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-top:.625rem}
+label{font-size:11px;color:#888;display:block;margin-bottom:4px}
+input,select{width:100%;height:38px;padding:0 .75rem;font-size:13px;border:1px solid #e0e0e0;border-radius:8px;background:#fafafa;color:#1a1a1a;outline:none}
+input:focus,select:focus{border-color:#FF6600}
+.tabs{display:flex;gap:6px;margin-bottom:.875rem}
+.tab{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e0e0e0;color:#888;background:#fafafa;transition:all .15s}
+.tab.on{background:#fff;color:#1a1a1a;border-color:#bbb}
+.drop{border:1.5px dashed #d0d0d0;border-radius:12px;padding:1.5rem;text-align:center;cursor:pointer;background:#fafafa;transition:border-color .15s}
+.drop:hover,.drop.over{border-color:#FF6600}
+.drop-icon{font-size:2rem;margin-bottom:.5rem}
+.drop-l{font-size:13px;color:#666}
+.drop-s{font-size:11px;color:#aaa;margin-top:3px}
+.preview{max-width:100%;max-height:150px;border-radius:8px;display:none;margin:.75rem auto;object-fit:contain}
+textarea{width:100%;min-height:90px;padding:.75rem;font-size:12px;font-family:monospace;border:1px solid #e0e0e0;border-radius:8px;background:#fafafa;resize:vertical;outline:none;line-height:1.6}
+textarea:focus{border-color:#FF6600}
+.btn{width:100%;height:44px;margin-top:.75rem;border:none;border-radius:10px;background:#FF6600;color:#fff;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+.btn:hover{background:#e55c00}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.scanning{display:none;align-items:center;gap:8px;font-size:12px;color:#888;padding:.5rem .75rem;background:#f5f5f0;border-radius:8px;margin:.5rem 0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin-icon{display:inline-block;animation:spin .7s linear infinite}
+.extracted{font-size:11px;font-family:monospace;color:#888;background:#f5f5f0;border-radius:8px;padding:.5rem .75rem;margin-top:.5rem;max-height:70px;overflow-y:auto;display:none;white-space:pre-wrap;word-break:break-all}
+.result{border-radius:10px;padding:1rem;margin-top:.75rem;display:none}
+.result.ok{background:#f0faf3;border:1px solid #b2dfbd}
+.result.ko{background:#fff5f5;border:1px solid #ffc0c0}
+.result.warn{background:#fffbf0;border:1px solid #ffd88a}
+.rtitle{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:.75rem}
+.rtitle.ok{color:#1e7e34}
+.rtitle.ko{color:#c0392b}
+.rtitle.warn{color:#b07d00}
+.chk{font-size:12px;display:flex;align-items:flex-start;gap:7px;padding:3px 0;line-height:1.5}
+.chk.ok{color:#1e7e34}
+.chk.ko{color:#c0392b}
+.chk.warn{color:#b07d00}
+.chk-icon{flex-shrink:0;margin-top:1px}
+.igrid{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin-top:.875rem;padding-top:.875rem;border-top:1px solid rgba(0,0,0,.06)}
+.ik{font-size:11px;color:#888}
+.iv{font-size:11px;font-weight:600;font-family:monospace;word-break:break-all}
+.hist-item{display:flex;align-items:center;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid #f0f0f0}
+.hist-item:last-child{border-bottom:none}
+.hist-id{font-family:monospace;font-size:11px;color:#aaa}
+.hist-amt{font-size:13px;font-weight:600}
+.badge{font-size:11px;padding:2px 10px;border-radius:20px;font-weight:600;white-space:nowrap}
+.bok{background:#e6f9ec;color:#1e7e34}
+.bko{background:#fff0f0;color:#c0392b}
+.bw{background:#fffbe6;color:#b07d00}
+.empty{font-size:13px;color:#aaa;text-align:center;padding:1rem}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="logo">BF</div>
+  <div>
+    <h1>Robot Vérificateur — Mobile Money BF</h1>
+    <p>Orange Money · Moov Money · Wave · Vérification automatique</p>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-n" id="s0">0</div><div class="stat-l">Total</div></div>
+  <div class="stat"><div class="stat-n" id="s1" style="color:#1e7e34">0</div><div class="stat-l">Valides</div></div>
+  <div class="stat"><div class="stat-n" id="s2" style="color:#c0392b">0</div><div class="stat-l">Rejetés</div></div>
+  <div class="stat"><div class="stat-n" id="s3" style="color:#b07d00">0</div><div class="stat-l">Suspects</div></div>
+</div>
+
+<div class="card">
+  <div class="card-title">⚙ Paramètres de vérification</div>
+  <div class="frow">
+    <div>
+      <label>Opérateur attendu</label>
+      <select id="op">
+        <option value="orange">Orange Money BF</option>
+        <option value="moov">Moov Money BF</option>
+        <option value="wave">Wave</option>
+        <option value="any">N'importe lequel</option>
+      </select>
+    </div>
+    <div>
+      <label>Type de paiement</label>
+      <select id="pt">
+        <option value="national">National (BF)</option>
+        <option value="international">International</option>
+      </select>
+    </div>
+  </div>
+  <div class="frow3">
+    <div>
+      <label>Montant attendu (FCFA)</label>
+      <input type="number" id="ea" placeholder="ex: 5000">
+    </div>
+    <div>
+      <label>Délai max (minutes)</label>
+      <input type="number" id="md" value="60" min="5">
+    </div>
+    <div>
+      <label>Tolérance montant</label>
+      <input type="number" id="tol" value="5" min="0">
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">📎 Justificatif du client</div>
+  <div class="tabs">
+    <div class="tab on" onclick="sw('img')">📷 Scanner image</div>
+    <div class="tab" onclick="sw('sms')">💬 Coller SMS</div>
+  </div>
+
+  <div id="ti">
+    <div class="drop" id="dz"
+      onclick="document.getElementById('fi').click()"
+      ondrop="onDrop(event)"
+      ondragover="e=>{e.preventDefault();document.getElementById('dz').classList.add('over')}"
+      ondragleave="document.getElementById('dz').classList.remove('over')">
+      <div class="drop-icon">🖼</div>
+      <div class="drop-l">Glisser l'image ici ou cliquer pour choisir</div>
+      <div class="drop-s">Capture Orange Money · Moov · Wave</div>
+    </div>
+    <input type="file" id="fi" accept="image/*" style="display:none" onchange="loadImg(this.files[0])">
+    <img id="prev" class="preview">
+    <div class="scanning" id="sc"><span class="spin-icon">⟳</span> Claude analyse l'image...</div>
+    <div class="extracted" id="ext"></div>
+  </div>
+
+  <div id="ts" style="display:none">
+    <textarea id="si" placeholder="Coller ici le SMS Orange Money, Moov ou Wave..."></textarea>
+  </div>
+
+  <button class="btn" id="vbtn" onclick="verify()">
+    🛡 Vérifier la transaction
+  </button>
+
+  <div class="result" id="res">
+    <div class="rtitle" id="rtitle"></div>
+    <div id="checks"></div>
+    <div class="igrid" id="igrid"></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">🕐 Historique session</div>
+  <div id="hist"><div class="empty">Aucune vérification encore</div></div>
+</div>
+
+</div>
+
+<script>
+const ST={t:0,ok:0,ko:0,w:0};
+const history=[];
+let activeTab='img';
+let imgB64=null;
+let imgType='image/jpeg';
+
+function sw(t){
+  activeTab=t;
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('on',(i===0&&t==='img')||(i===1&&t==='sms')));
+  document.getElementById('ti').style.display=t==='img'?'':'none';
+  document.getElementById('ts').style.display=t==='sms'?'':'none';
+}
+
+function onDrop(e){
+  e.preventDefault();
+  document.getElementById('dz').classList.remove('over');
+  const f=e.dataTransfer.files[0];
+  if(f&&f.type.startsWith('image/'))loadImg(f);
+}
+
+function loadImg(file){
+  if(!file)return;
+  imgType=file.type||'image/jpeg';
+  const r=new FileReader();
+  r.onload=e=>{
+    const src=e.target.result;
+    const p=document.getElementById('prev');
+    p.src=src;p.style.display='block';
+    imgB64=src.split(',')[1];
+    document.getElementById('ext').style.display='none';
+  };
+  r.readAsDataURL(file);
+}
+
+async function verify(){
+  const btn=document.getElementById('vbtn');
+  btn.disabled=true;
+
+  const payload={
+    operateur:document.getElementById('op').value,
+    pay_type:document.getElementById('pt').value,
+    expected_amount:document.getElementById('ea').value,
+    max_delay_min:document.getElementById('md').value,
+    tolerance:document.getElementById('tol').value,
+  };
+
+  if(activeTab==='img'){
+    if(!imgB64){alert('Chargez une image d\'abord.');btn.disabled=false;return;}
+    document.getElementById('sc').style.display='flex';
+    payload.image_b64=imgB64;
+    payload.media_type=imgType;
+  } else {
+    const txt=document.getElementById('si').value.trim();
+    if(!txt){alert('Collez un SMS d\'abord.');btn.disabled=false;return;}
+    payload.text=txt;
+  }
+
+  try {
+    const resp=await fetch('/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const data=await resp.json();
+    document.getElementById('sc').style.display='none';
+
+    if(data.error){alert('Erreur : '+data.error);btn.disabled=false;return;}
+
+    if(data.raw_text&&activeTab==='img'){
+      const ext=document.getElementById('ext');
+      ext.textContent='Texte extrait :\n'+data.raw_text;
+      ext.style.display='block';
+    }
+
+    displayResult(data);
+  } catch(e){
+    document.getElementById('sc').style.display='none';
+    alert('Erreur réseau : '+e.message);
+  }
+  btn.disabled=false;
+}
+
+function displayResult(data){
+  const v=data.verdict;
+  const p=data.parsed;
+  const opNames={orange:'Orange Money',moov:'Moov Money',wave:'Wave',any:'Mobile Money'};
+  const op=document.getElementById('op').value;
+
+  ST.t++;
+  if(v==='ok')ST.ok++;else if(v==='ko')ST.ko++;else ST.w++;
+  ['s0','s1','s2','s3'].forEach((id,i)=>document.getElementById(id).textContent=[ST.t,ST.ok,ST.ko,ST.w][i]);
+
+  history.unshift({v,amount:p.amount,txId:p.tx_id,op:opNames[op]||'?'});
+  renderHist();
+
+  const box=document.getElementById('res');
+  const rt=document.getElementById('rtitle');
+  box.style.display='block';
+  box.className='result '+v;
+  rt.className='rtitle '+v;
+  const msgs={ok:'✅ Transaction VALIDE — commande confirmée',ko:'❌ Transaction REJETÉE — ne pas valider',warn:'⚠️ Transaction SUSPECTE — vérification manuelle'};
+  rt.textContent=msgs[v];
+
+  document.getElementById('checks').innerHTML=data.checks.map(c=>{
+    const icon=c.status==='ok'?'✓':c.status==='warn'?'⚠':'✗';
+    return`<div class="chk ${c.status}"><span class="chk-icon">${icon}</span><span>${c.msg}</span></div>`;
+  }).join('');
+
+  document.getElementById('igrid').innerHTML=[
+    ['Montant',p.amount?p.amount.toLocaleString()+' FCFA':'—'],
+    ['ID Trans',p.tx_id||'—'],
+    ['Numéro',p.number||'—'],
+    ['Date paiement',p.date||'—'],
+    ['Frais',p.fees?p.fees+' FCFA':'—'],
+    ['Solde après',p.balance?p.balance.toLocaleString()+' FCFA':'—'],
+  ].map(([k,v2])=>`<div class="ik">${k}</div><div class="iv">${v2}</div>`).join('');
+}
+
+function renderHist(){
+  const el=document.getElementById('hist');
+  if(!history.length){el.innerHTML='<div class="empty">Aucune vérification encore</div>';return;}
+  const vc={ok:'bok',ko:'bko',warn:'bw'};
+  const vt={ok:'Valide',ko:'Rejeté',warn:'Suspect'};
+  el.innerHTML=history.slice(0,10).map(h=>`
+    <div class="hist-item">
+      <div>
+        <div class="hist-id">${h.txId||'ID inconnu'} · ${h.op}</div>
+        <div class="hist-amt">${h.amount?h.amount.toLocaleString()+' FCFA':'? FCFA'}</div>
+      </div>
+      <span class="badge ${vc[h.v]}">${vt[h.v]}</span>
+    </div>`).join('');
+}
+</script>
+</body>
+  </html>
+  
